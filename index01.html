@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Index de AngularJS</title>
+<style>
+body {
+	font-family: sans-serif;
+}
+
+li {
+	font-size: 0.8em;
+	margin-bottom: 10px;
+	padding: 10px;
+}
+
+li span {
+	font-weight: bold;
+	display: block;
+	font-size: 1.2em;
+}
+
+aside {
+	width: 200px;
+	float: right;
+	padding: 20px;
+	display: table-cell;
+}
+
+aside h2 {
+	margin-bottom: 3px;
+}
+
+section {
+	display: table-cell;
+}
+
+li.even {
+	background-color: #d5d5d5;
+}
+
+li.odd {
+	background-color: #d5d5ff;
+}
+</style>
+</head>
+<body>
+
+	<div ng-app="apiApp" ng-controller="apiAppCtrl as vm">
+  <h1>Pruebo Ajax con JSONP</h1>
+  <p>
+      Filtra Centro:
+      <select ng-model="vm.centroId" ng-change="vm.filtraCentros()">
+      	 <option></option> 
+     	 <option ng-repeat="centro in vm.listCentros" value="{{centro.id}}">{{centro.centro}}</option>      
+      </select>
+  </p>
+  
+    <ul>
+      <li ng-repeat="centro in vm.centros" >
+      	<span>{{centro.centro}}, </span>
+      	<div ng-bind-html="centro.descripcion|trustAsHtml">
+      </li>
+  </ul>
+</div>
+	<script	src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.23/angular.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.23/angular-sanitize.min.js"></script>
+	<script type="text/javascript">
+	angular
+		.module('apiApp', [])
+		.controller('apiAppCtrl', controladorPrincipal)
+		.filter('trustAsHtml',['$sce', function($sce) {
+        	return function(text) {
+            	return $sce.trustAsHtml(text);
+          	};
+        }]);
+
+function controladorPrincipal($scope, $http){
+    var vm=this;
+    var url = "http://localhost:3000/api/centros";
+    $http.get(url).success(function(respuesta){
+        //console.log("res:", respuesta);
+        if(respuesta.status){
+        	console.log("centros:", respuesta.data);
+        	vm.listCentros = respuesta.data;
+        	vm.centros= respuesta.data;
+        }
+        
+    });
+    
+    vm.filtraCentros = function(){
+       console.log(vm.centroId) 
+       var url = "http://localhost:3000/api/centros";
+       if(vm.centroId){  
+            url += "/" + vm.centroId;
+            $http.get(url).success(function(respuesta){
+                console.log("res:", respuesta);
+                if(respuesta.status){
+                	console.log("centros:", respuesta.data);
+                	vm.centros = [respuesta.data];
+                }
+                
+            });
+        }else{
+        	$http.get(url).success(function(respuesta){
+                console.log("res:", respuesta);
+                if(respuesta.status){
+                	console.log("centros:", respuesta.data);
+                	vm.centros = respuesta.data;
+                }
+                
+            });
+        }  
+    }
+}
+	</script>
+</body>
